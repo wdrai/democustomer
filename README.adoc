@@ -1,4 +1,4 @@
-* Step 1: Setup project
+=== Step 1: Setup project
 
 NOTE: Ensure that your FLEX_HOME environment variable points to a valid Apache Flex installation directory before starting Eclipse / GGTS
 
@@ -34,7 +34,7 @@ Resolve dependencies and install gdsflex plugin with right-click on project demo
 grails compile
 ----
 
-* Step 2: Domain model
+=== Step 2: Domain model
 
 Create a domain class named Customer with File / New Domain Class or
 
@@ -87,9 +87,9 @@ class BootStrap {
     def destroy = {
     }
 }
+----
 
-
-* Step 3: Controller
+=== Step 3: Controller
 
 Create a controller named Customer with File / New Controller or
 
@@ -118,7 +118,7 @@ class CustomerController {
 
 +@TideEnabled+ indicates that the controller is accessible from Flex
 
-* Step 4: Create a simple Flex UI
+=== Step 4: Create a simple Flex UI
 
 ----
 grails generate-flex-app
@@ -146,7 +146,7 @@ And browse the application at http://localhost:8080/democustomer/democustomer.sw
 At this point you should be able to create/update/delete customers.
 
 
-Step 5: Configure Spring Security
+=== Step 5: Configure Spring Security
 
 First install the Spring Security plugin in grails-app/conf/BuildConfig.groovy
 
@@ -296,7 +296,7 @@ the user using the +Identity+ component
 	</mx:ViewStack>
 ----
 
-* Step 6: Configure GraniteDS Data Push
+=== Step 6: Configure GraniteDS Data Push
 
 Using data push first requires to define a messaging destination in +conf/spring/resources.groovy+.
 It will be subscribed by the Flex clients and used by the server to push data updates.
