@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<mx:HBox
+    xmlns:mx="http://www.adobe.com/2006/mxml"
+    xmlns="*"
+    width="100%"
+    creationComplete="buildColumns()">
+	
+	<mx:Script>
+        <![CDATA[
+        	import org.granite.tide.uibuilder.IUIBuilder;
+        	import org.granite.tide.uibuilder.IEntityMetadataBuilder;
+        	import org.granite.tide.BaseContext;
+        	import mx.controls.dataGridClasses.DataGridColumn;
+        	import mx.collections.ListCollectionView;
+        	
+        	
+            private function addItem():void {
+                var element:Object = new _elementClass(entity);
+                collection.addItem(element);
+                elementGrid.editedItemPosition = {columnIndex: 0, rowIndex: collection.length-1 };
+            }
+           
+            private function removeItem():void {
+                collection.removeItemAt(elementGrid.selectedIndex);
+            }
+			
+			private function get context():BaseContext {
+				return entity.meta_getEntityManager() as BaseContext;
+			}
+			
+			[Bindable]
+			public var entity:Object;
+			
+			[Bindable]
+			public var collection:ListCollectionView;
+			
+			public var _elementClass:Class;
+			
+            public function set elementClass(elementClass:Class):void {
+            	_elementClass = elementClass;
+			}
+			
+			[Bindable]
+			public var editable:Boolean = true;
+			
+			[Bindable]
+			private var _columns:Array = null;
+			
+			private function buildColumns():void {
+				var elementClassName:String = getQualifiedClassName(_elementClass);
+				var metadata:Array = IEntityMetadataBuilder(context.tideEntityMetadataBuilder).buildMetadata(_elementClass);
+				_columns = IUIBuilder(context.tideUIBuilder).buildListColumns(elementClassName, metadata, true);
+			}
+      	]]>
+	</mx:Script>
+
+	<mx:DataGrid id="elementGrid" dataProvider="{collection}" editable="{editable}" columns="{_columns}" width="50%"/>
+
+	<mx:VBox visible="{editable}">
+		<mx:Button label="Add"
+			click="addItem()"/>
+		<mx:Button label="Remove"
+			enabled="{Boolean(elementGrid.selectedItem)}"
+			click="removeItem()"/>
+	</mx:VBox>
+	
+	<mx:Spacer width="50%"/>
+</mx:HBox>

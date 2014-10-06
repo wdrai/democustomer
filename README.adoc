@@ -1,0 +1,445 @@
+* Step 1: Setup project
+
+NOTE: Ensure that your FLEX_HOME environment variable points to a valid Apache Flex installation directory before starting Eclipse / GGTS
+
+Create a new project with "File / New Grails Project" or 
+
+----
+grails create-app democustomer
+
+cd democustomer
+----
+
+Temporary : add snapshot repository in +conf/BuildConfig.groovy+ until GraniteDS 3.1.1.GA and the Grails plugin are released as final versions. 
+
+----
+repositories {
+  ...
+  mavenRepo "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+----
+
+Add plugin dependency in +grails-app/conf/BuildConfig.groovy+
+
+----
+plugins {
+  ...
+  compile 'org.graniteds.grails:gdsflex:2.0.0-SNAPSHOT'
+}
+----
+
+Resolve dependencies and install gdsflex plugin with right-click on project democustomer / Grails Tools / Refresh Dependencies or
+
+----
+grails compile
+----
+
+* Step 2: Domain model
+
+Create a domain class named Customer with File / New Domain Class or
+
+----
+grails create-domain-class Customer
+----
+
+.grails-app/domain/democustomer/Customer.groovy
+[source,groovy]
+----
+package democustomer
+
+class Customer implements java.io.Serializable {
+
+    static constraints = {
+	}
+	
+	String uid
+	
+	String firstName
+	
+	String lastName
+	
+	Integer numberOfLogons = 0
+	
+	// This is to ensure that the entity will have a proper unique uid
+	// before being persisted
+	def beforeValidate() {
+		if (uid == null)
+			uid = java.util.UUID.randomUUID().toString();
+	}
+}
+----
+
+We are going to create some initial example data in the +grails-app/conf/BootStrap.groovy+ file
+
+[source,groovy]
+----
+import democustomer.Customer
+
+class BootStrap {
+
+    def init = { servletContext ->
+		
+		println "Init db"
+        new Customer(firstName: "Justin M.", lastName: "Hill").save(flush:true);
+        new Customer(firstName: "Pan", lastName: "Li").save(flush:true);
+    }
+	
+    def destroy = {
+    }
+}
+
+
+* Step 3: Controller
+
+Create a controller named Customer with File / New Controller or
+
+----
+grails create-controller Customer
+----
+
+We are going to build a very simple controller using Grails scaffolding to execute database operations on the Customer entity.
+
+[source,groovy]
+----
+package democustomer
+
+import org.granite.tide.annotations.TideEnabled;
+import org.springframework.transaction.annotation.Transactional;
+
+@TideEnabled
+@Transactional
+class CustomerController {
+	
+    def index() { }
+	
+	def scaffold = Customer
+}
+----
+
++@TideEnabled+ indicates that the controller is accessible from Flex
+
+* Step 4: Create a simple Flex UI
+
+----
+grails generate-flex-app
+----
+
+This will launch the AS3 class generator and generate a basic Flex application.
+The AS3 domain class CustomerBase.as is generated in grails-app/views/flex, as well as the Flex application.
+
+Then compile the application with
+
+----
+grails mxmlc
+----
+
+There will be a few minor compilation warnings about data binding that do not prevent the application from working.
+
+Then start the server
+
+----
+grails run-app
+----
+
+And browse the application at http://localhost:8080/democustomer/democustomer.swf
+
+At this point you should be able to create/update/delete customers.
+
+
+Step 5: Configure Spring Security
+
+First install the Spring Security plugin in grails-app/conf/BuildConfig.groovy
+
+----
+plugins {
+  ...
+  compile ':spring-security-core:2.0-RC4'
+}
+----
+
+And install the plugin with project democustomer / Right click / Grails Tools / Refresh Dependencies or
+
+----
+grails refresh-dependencies
+----
+
+Configure the plugin, first security domain classes
+
+----
+grails s2-quickstart democustomer Person Authority
+----
+
+Next permit outside access to GraniteDS urls in +grails-app/conf/Config.groovy+
+
+----
+grails.plugin.springsecurity.controllerAnnotations.staticRules = [
+	'/':                              ['permitAll'],
+	'/*.swf':						  ['permitAll'],
+	'/graniteamf/**':				  ['permitAll'],
+	'/gravityamf/**':				  ['permitAll'],
+	'/index':                         ['permitAll'],
+	'/index.gsp':                     ['permitAll'],
+	'/assets/**':                     ['permitAll'],
+	'/**/js/**':                      ['permitAll'],
+	'/**/css/**':                     ['permitAll'],
+	'/**/images/**':                  ['permitAll'],
+	'/**/favicon.ico':                ['permitAll']
+]
+----
+
+And finally create initial users in +grails-app/conf/BootStrap.groovy+
+
+[source,groovy]
+----
+...
+import demoprominic.Person
+import demoprominic.Authority
+import demoprominic.PersonAuthority
+
+class BootStrap {
+	
+    def init = { servletContext ->
+		
+		...		
+		def user_admin = new Person(username:"admin", password:"admin", enabled:true).save(flush:true)
+		
+		def user_user = new Person(username:"user", password:"user", enabled:true).save(flush:true)
+		
+		def role_admin = new Authority(description:"Admin", authority:"ROLE_ADMIN").save(flush:true)
+		def role_user = new Authority(description:"User", authority:"ROLE_USER").save(flush:true)
+				  
+		new PersonAuthority(person:user_admin, authority:role_admin).save(flush:true)
+		new PersonAuthority(person:user_admin, authority:role_user).save(flush:true)
+		new PersonAuthority(person:user_user, authority:role_user).save(flush:true)
+    }
+	
+    def destroy = {
+    }
+}
+----
+
+Now that the plugin is correctly configured, we can secure our controller so it can be accessed only by authenticated 
+users having the role ROLE_USER
+
+----
+package democustomer
+
+import org.granite.tide.annotations.TideEnabled;
+import org.springframework.transaction.annotation.Transactional;
+import grails.plugin.springsecurity.annotation.Secured
+
+@TideEnabled
+@Transactional
+@Secured(['ROLE_USER'])
+class CustomerController {
+	
+    def index() { }
+	
+	def scaffold = Customer
+}
+----
+
+And add a login page in the main Flex application in +grails-app/views/flex/democustomer.mxml+ that will authenticate
+the user using the +Identity+ component
+
+[source,actionscript]
+----
+    <mx:Script>
+        <![CDATA[
+			import org.granite.tide.spring.Identity;
+    		import org.granite.tide.events.TideResultEvent;
+    		import org.granite.tide.events.TideFaultEvent;
+			...
+            
+            [Bindable] [Inject]
+    		public var identity:Identity;
+    
+    		[Bindable]
+    		private var message:String;
+ 
+    		private function loginResult(event:TideResultEvent):void {
+        		message = "";
+    		}
+ 			
+    		private function loginFault(event:TideFaultEvent):void {
+        		message = event.fault.faultString;
+    		}
+			...
+        ]]>
+    </mx:Script>
+
+	<mx:ViewStack id="appView" selectedIndex="{identity.loggedIn ? 1 : 0}" width="100%" height="100%">
+        <mx:VBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="center">
+           <mx:Panel title="Login"
+               horizontalAlign="center"
+               verticalGap="0" paddingTop="8" paddingBottom="8"
+               xmlns:mx="http://www.adobe.com/2006/mxml">
+
+               <mx:Form>
+                   <mx:FormItem label="Username">
+                       <mx:TextInput id="username"/>
+                   </mx:FormItem>
+                   <mx:FormItem label="Password">
+                       <mx:TextInput id="password" displayAsPassword="true"
+                           enter="identity.login(username.text, password.text, loginResult, loginFault);"/>
+                   </mx:FormItem>
+               </mx:Form>
+             
+               <mx:Label text="{message}"/>
+
+               <mx:Button label="Login"
+                   click="identity.login(username.text, password.text, loginResult, loginFault);"/>
+           </mx:Panel>
+       </mx:VBox>
+       
+		...
+	</mx:ViewStack>
+----
+
+* Step 6: Configure GraniteDS Data Push
+
+Using data push first requires to define a messaging destination in +conf/spring/resources.groovy+.
+It will be subscribed by the Flex clients and used by the server to push data updates.
+
+----
+beans = {
+	xmlns graniteds:"http://www.graniteds.org/config"
+	graniteds."messaging-destination"('id': 'customerTopic', "no-local": true, 'session-selector': true)
+}
+----
+
+As it will be used by the server to publish data updates, it has to be subscribed by the clients
+
+----
+<mx:Script>
+	<![CDATA[
+		...
+		import org.granite.tide.data.DataObserver;
+
+		...
+		private function init():void {
+			...
+			// Register a data observer component with the name of the topic
+			Spring.getInstance().addComponent("bookManagerTopic", DataObserver, false, true);
+			// Binds the subscribe and unsubscribe methods of the component to the application login/logout events
+			Spring.getInstance().addEventObserver("org.granite.tide.login", "bookManagerTopic", "subscribe");
+			Spring.getInstance().addEventObserver("org.granite.tide.logout", "bookManagerTopic", "unsubscribe");
+			...
+		}
+----
+
+Now we have to tell Grails and GraniteDS that updates made through our customer controller should be published by annotating
+the controller with @DataEnabled
+
+----
+package democustomer
+
+import org.granite.tide.annotations.TideEnabled;
+import org.springframework.transaction.annotation.Transactional;
+import grails.plugin.springsecurity.annotation.Secured
+import org.granite.tide.data.DataEnabled;
+
+@TideEnabled
+@Transactional
+@Secured(['ROLE_USER'])
+@DataEnabled(topic="customerTopic", publish=DataEnabled.PublishMode.ON_SUCCESS)
+class CustomerController {
+	
+    def index() { }
+	
+	def scaffold = Customer
+}
+----
+
+Finally we have to plug GraniteDS into Hibernate to be able to detect and publish the changes on entities by 
+adding a file META-INF/services/org.hibernate.integrator.spi.Integrator containing the following line :
+
+----
+org.granite.tide.hibernate4.Hibernate4Integrator
+----
+
+Now restart everything, and if you open two browsers on the application, you can see changes made in one browser 
+applied in real-time on the other.
+
+
+* Step 7: Add server-generated pushed data
+
+Until now all updates were made by users through the UI. 
+Now we are going to simulate server-side data changes with a service generating random logons on users.
+
+First the service
+
+----
+package democustomer
+
+import org.granite.tide.data.DataEnabled;
+import org.springframework.transaction.annotation.Transactional;
+
+@DataEnabled(topic="customerTopic", publish=DataEnabled.PublishMode.ON_COMMIT, useInterceptor=true)
+class RandomLogonGeneratorService {
+
+    def generateLogon() {
+		int count = Customer.count()
+		if (count == 0)
+			return;
+		
+		int id = new java.util.Random().nextInt(count) + 1;
+		
+		Customer customer = Customer.get(id);
+		if (customer != null) {
+			println "Update customer " + customer.id + " (version " + customer.version + ")"
+			customer.numberOfLogons++;
+			customer.save(flush: true);
+		}
+    }
+}
+----
+
+There is nothing special in this service which just selects a random Customer in the database, and increases
+its numberOfLogons property.
+The only thing is the annotation @DataEnabled (similar to the one we have used on the controller) that allows
+GraniteDS to intercept the execution of the service and publish the data changes. The main difference here is the
+useInterceptor=true attribute which is necessary because this service is executed out of the scope of a GraniteDS
+remoting request. GraniteDS thus has to use Spring AOP to do its work.
+
+Finally we schedule the execution of this service at regular periods in BootStrap.groovy
+
+----
+...
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.Callable
+
+
+class BootStrap {
+	
+	def randomLogonGeneratorService
+	
+	def persistenceInterceptor
+	
+
+    def init = { servletContext ->
+		...
+		println "Start logon generator"
+		ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(1);
+		scheduledExecutor.scheduleAtFixedRate({
+			persistenceInterceptor.init()
+			try {
+				randomLogonGeneratorService.generateLogon()
+			} 
+			finally {
+				persistenceInterceptor.flush()
+				persistenceInterceptor.destroy()
+			}
+		} as Runnable, 10, 10, TimeUnit.SECONDS)
+	}
+	
+	...
+}
+
+The persistenceInterceptor is necessary to setup and cleanup the GORM environment in the scheduler thread.
+This scheduled executor is just here for the simulation, in real-world cases the changes would be generated by 
+calls on the service made by external servers.
+
+If you restart everything, the column numberOfLogons should be updated in the Flex clients every 10s without 
+any manual user intervention.

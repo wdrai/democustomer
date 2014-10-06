@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<mx:HBox
+    xmlns:mx="http://www.adobe.com/2006/mxml"
+    xmlns="*"
+    creationComplete="init()">
+	
+	<mx:Script>
+        <![CDATA[
+        	import flash.utils.getQualifiedClassName;
+        	import mx.events.FlexEvent;
+        	import org.granite.tide.events.TideResultEvent;
+        	import org.granite.tide.Component;
+        	import org.granite.tide.BaseContext;
+        	import org.granite.tide.uibuilder.util.ReflectionUtil;
+        	
+        	
+			[Bindable]
+			public var entity:Object;
+			
+			[Bindable]
+			public var property:Object;
+			
+			public var _elementClass:Class;
+			private var _elementName:String;
+			private var _qualifiedElementName:String;
+			private var _elementLabel:String;
+			
+			
+			private function get context():BaseContext {
+				return entity.meta_getEntityManager() as BaseContext;
+			}
+			
+			private function get controller():Component {
+				return context[_qualifiedElementName + 'Controller'];
+			}
+			
+            public function set elementClass(elementClass:Class):void {
+            	_elementClass = elementClass;
+            	var className:String = getQualifiedClassName(elementClass);
+            	_elementName = ReflectionUtil.getEntityName(className);
+            	_qualifiedElementName = ReflectionUtil.getQualifiedEntityName(className);
+			}
+			
+			private function init():void {
+				controller.list(context, {offset: 0, max: 100, order: _elementLabel, desc: false}, listResult);
+			}
+			
+			private function listResult(event:TideResultEvent):void {
+            	propertyInput.labelField = context.tideEntityMetadataBuilder.getDisplayLabel(_elementClass);            	
+				propertyInput.dataProvider = context[_elementName + 'InstanceList'];
+				propertyInput.selectedIndex = propertyInput.dataProvider.getItemIndex(property); 
+			}
+			
+			private function valueChanged():void {
+				property = propertyInput.selectedItem;
+			}
+      	]]>
+	</mx:Script>
+
+	<mx:ComboBox id="propertyInput"
+		dataProvider="{context[_elementName + 'InstanceList']}"
+		selectedIndex="{context[_elementName + 'InstanceList'].getItemIndex(property)}"
+		change="valueChanged()"/>
+</mx:HBox>
