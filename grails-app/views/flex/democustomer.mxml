@@ -10,22 +10,22 @@
    
     <mx:Script>
         <![CDATA[
-        	import mx.core.Container;
-        	import org.granite.tide.spring.Context;
-            import org.granite.tide.spring.Spring;
-        	import org.granite.tide.validators.ValidatorExceptionHandler;
-        	import org.granite.tide.deeplinking.TideUrlMapping;
-            import org.granite.tide.uibuilder.GrailsEntityMetadataBuilder;
-            import org.granite.tide.uibuilder.DefaultUIBuilder;
-            import org.granite.tide.uibuilder.DefaultUIFormLayout;
-            
-            import democustomer.Customer;
-
+			import democustomer.Customer;
+			
+			import mx.core.Container;
+			
+			import org.granite.tide.data.ChangeMerger;
+			import org.granite.tide.data.DataObserver;
+			import org.granite.tide.deeplinking.TideUrlMapping;
+			import org.granite.tide.events.TideFaultEvent;
+			import org.granite.tide.events.TideResultEvent;
+			import org.granite.tide.spring.Context;
 			import org.granite.tide.spring.Identity;
-    		import org.granite.tide.events.TideResultEvent;
-    		import org.granite.tide.events.TideFaultEvent;
-    		
-    		import org.granite.tide.data.DataObserver;
+			import org.granite.tide.spring.Spring;
+			import org.granite.tide.uibuilder.DefaultUIBuilder;
+			import org.granite.tide.uibuilder.DefaultUIFormLayout;
+			import org.granite.tide.uibuilder.GrailsEntityMetadataBuilder;
+			import org.granite.tide.validators.ValidatorExceptionHandler;
             
             [Bindable]
             private var context:Context;
@@ -51,6 +51,7 @@
 	            
 	            // Register a data observer component with the name of the topic
 				Spring.getInstance().addComponent("customerTopic", DataObserver, false, true);
+				Spring.getInstance().addComponents([ChangeMerger]);
 				// Binds the subscribe and unsubscribe methods of the component to the application login/logout events
 				Spring.getInstance().addEventObserver("org.granite.tide.login", "customerTopic", "subscribe");
 				Spring.getInstance().addEventObserver("org.granite.tide.logout", "customerTopic", "unsubscribe");
