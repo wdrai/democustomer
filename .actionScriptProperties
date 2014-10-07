@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties analytics="false" mainApplicationPath="democustomer.mxml" projectUUID="9cb4ba6b-bfd4-43fe-8036-499f20db2a1b" version="10">
+  <compiler additionalCompilerArguments="-locale en_US -include-libraries target/work/plugins/gdsflex-2.0.0-SNAPSHOT/src/flex/libs/granite-client-flex.swc -keep-as3-metadata Name,In,Inject,Out,Produces,Observer,ManagedEvent,PostConstruct,Destroy,Path,Id,Version,Lazy" autoRSLOrdering="false" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="grails-app/views/swf" removeUnusedRSL="true" rootURL="http://localhost:8080/democustomer/democustomer.swf" sourceFolderPath="grails-app/views/flex" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="0">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry kind="3" linkType="1" path="target/work/plugins/gdsflex-2.0.0-SNAPSHOT/src/flex/libs/granite-client-flex.swc" sourcepath="~/.m2/repository/org/graniteds/granite-client-flex/3.1.1-SNAPSHOT/granite-client-flex-3.1.1-SNAPSHOT-sources.jar" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="target/work/plugins/gdsflex-2.0.0-SNAPSHOT/src/flex/libs/granite-client-flex45-advanced.swc" sourcepath="~/.m2/repository/org/graniteds/granite-client-flex45-advanced/3.1.1-SNAPSHOT/granite-client-flex45-advanced-3.1.1-SNAPSHOT-sources.jar" useDefaultLinkType="false"/>
+    </libraryPath>
+    <sourceAttachmentPath>
+      <sourceAttachmentPathEntry kind="3" linkType="1" path="target/work/plugins/gdsflex-2.0.0-SNAPSHOT/src/flex/libs/granite-client-flex.swc" sourcepath="~/.m2/repository/org/graniteds/granite-client-flex/3.1.1-SNAPSHOT/granite-client-flex-3.1.1-SNAPSHOT-sources.jar" useDefaultLinkType="false"/>
+      <sourceAttachmentPathEntry kind="3" linkType="1" path="target/work/plugins/gdsflex-2.0.0-SNAPSHOT/src/flex/libs/granite-client-flex45-advanced.swc" sourcepath="~/.m2/repository/org/graniteds/granite-client-flex45-advanced/3.1.1-SNAPSHOT/granite-client-flex45-advanced-3.1.1-SNAPSHOT-sources.jar" useDefaultLinkType="false"/>
+    </sourceAttachmentPath>
+  </compiler>
+  <applications>
+    <application path="democustomer.mxml"/>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+</actionScriptProperties>
