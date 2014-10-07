@@ -315,15 +315,18 @@ As it will be used by the server to publish data updates, it has to be subscribe
 	<![CDATA[
 		...
 		import org.granite.tide.data.DataObserver;
+		import org.granite.tide.data.ChangeMerger;
 
 		...
 		private function init():void {
 			...
 			// Register a data observer component with the name of the topic
-			Spring.getInstance().addComponent("bookManagerTopic", DataObserver, false, true);
+			Spring.getInstance().addComponent("customerTopic", DataObserver, false, true);
+			// Register a Change Set merger to handle incremental updates
+			Spring.getInstance().addComponents([ChangeMerger]);
 			// Binds the subscribe and unsubscribe methods of the component to the application login/logout events
-			Spring.getInstance().addEventObserver("org.granite.tide.login", "bookManagerTopic", "subscribe");
-			Spring.getInstance().addEventObserver("org.granite.tide.logout", "bookManagerTopic", "unsubscribe");
+			Spring.getInstance().addEventObserver("org.granite.tide.login", "customerTopic", "subscribe");
+			Spring.getInstance().addEventObserver("org.granite.tide.logout", "customerTopic", "unsubscribe");
 			...
 		}
 ----
@@ -355,7 +358,7 @@ Finally we have to plug GraniteDS into Hibernate to be able to detect and publis
 adding a file META-INF/services/org.hibernate.integrator.spi.Integrator containing the following line :
 
 ----
-org.granite.tide.hibernate4.Hibernate4Integrator
+org.granite.tide.hibernate4.Hibernate4ChangeSetIntegrator
 ----
 
 Now restart everything, and if you open two browsers on the application, you can see changes made in one browser 
