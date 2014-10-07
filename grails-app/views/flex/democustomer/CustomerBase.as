@@ -13,6 +13,7 @@ package democustomer {
     import flash.utils.IDataOutput;
     import flash.utils.IExternalizable;
     import mx.core.IUID;
+    import mx.data.utils.Managed;
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
     import org.granite.tide.IEntity;
@@ -24,17 +25,21 @@ package democustomer {
     [Managed]
     public class CustomerBase implements IExternalizable, IUID {
 
-        protected var _em:IEntityManager = null;
+        public function CustomerBase() {
+        }
 
+        [Transient]
+        meta var entityManager:IEntityManager = null;
+		
         private var __initialized:Boolean = true;
         private var __detachedState:String = null;
 
         private var _firstName:String;
-        private var _id:Number;
+        protected var _id:Number;
         private var _lastName:String;
         private var _numberOfLogons:Number;
         private var _uid:String;
-        private var _version:Number;
+        protected var _version:Number;
 
         meta function isInitialized(name:String = null):Boolean {
             if (!name)
@@ -47,13 +52,26 @@ package democustomer {
             );
         }
 
-        [Transient]
-        public function meta_getEntityManager():IEntityManager {
-            return _em;
+        meta function defineProxy(id:Number):void {
+            __initialized = false;
+            _id = id;
         }
-        public function meta_setEntityManager(em:IEntityManager):void {
-        	_em = em;
+        meta function defineProxy3(obj:* = null):Boolean {
+            if (obj != null) {
+                var src:CustomerBase = CustomerBase(obj);
+                if (src.__detachedState == null)
+                    return false;
+                _id = src._id;
+                __detachedState = src.__detachedState;
+            }
+            __initialized = false;
+            return true;          
         }
+        
+        [Bindable(event="dirtyChange")]
+		public function get meta_dirty():Boolean {
+			return Managed.getProperty(this, "meta_dirty", false);
+		}
     
     	public static const meta_constraints:Array = [
     		{ property: "firstName" }, 
@@ -105,17 +123,17 @@ package democustomer {
             return _version;
         }
 
-        public function meta_merge(em:IEntityManager, obj:*):void {
+        meta function merge(em:IEntityManager, obj:*):void {
             var src:CustomerBase = CustomerBase(obj);
             __initialized = src.__initialized;
             __detachedState = src.__detachedState;
             if (meta::isInitialized()) {
-               	em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String});
-               	em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number});
-               	em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String});
-               	em.meta_mergeExternal(src._numberOfLogons, _numberOfLogons, null, this, 'numberOfLogons', function setter(o:*):void{_numberOfLogons = o as Number});
-               	em.meta_mergeExternal(src._uid, _uid, null, this, 'uid', function setter(o:*):void{_uid = o as String});
-               	em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number});
+               em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}, false);
+               em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number}, false);
+               em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}, false);
+               em.meta_mergeExternal(src._numberOfLogons, _numberOfLogons, null, this, 'numberOfLogons', function setter(o:*):void{_numberOfLogons = o as Number}, false);
+               em.meta_mergeExternal(src._uid, _uid, null, this, 'uid', function setter(o:*):void{_uid = o as String}, false);
+               em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number}, false);
             }
             else {
                em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number});

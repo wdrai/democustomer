@@ -14,6 +14,7 @@ package democustomer {
     import flash.utils.IExternalizable;
     import flash.utils.getQualifiedClassName;
     import mx.core.IUID;
+    import mx.data.utils.Managed;
     import mx.utils.UIDUtil;
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
@@ -26,14 +27,18 @@ package democustomer {
     [Managed]
     public class AuthorityBase implements IExternalizable, IUID {
 
-        protected var _em:IEntityManager = null;
+        public function AuthorityBase() {
+        }
 
+        [Transient]
+        meta var entityManager:IEntityManager = null;
+		
         private var __initialized:Boolean = true;
         private var __detachedState:String = null;
 
         private var _authority:String;
-        private var _id:Number;
-        private var _version:Number;
+        protected var _id:Number;
+        protected var _version:Number;
 
         meta function isInitialized(name:String = null):Boolean {
             if (!name)
@@ -46,17 +51,30 @@ package democustomer {
             );
         }
 
-        [Transient]
-        public function meta_getEntityManager():IEntityManager {
-            return _em;
+        meta function defineProxy(id:Number):void {
+            __initialized = false;
+            _id = id;
         }
-        public function meta_setEntityManager(em:IEntityManager):void {
-        	_em = em;
+        meta function defineProxy3(obj:* = null):Boolean {
+            if (obj != null) {
+                var src:AuthorityBase = AuthorityBase(obj);
+                if (src.__detachedState == null)
+                    return false;
+                _id = src._id;
+                __detachedState = src.__detachedState;
+            }
+            __initialized = false;
+            return true;          
         }
+        
+        [Bindable(event="dirtyChange")]
+		public function get meta_dirty():Boolean {
+			return Managed.getProperty(this, "meta_dirty", false);
+		}
     
     	public static const meta_constraints:Array = [
     		{ property: "authority",
-				blank: "BlankConstraint@4a2d9095false"
+				blank: "BlankConstraint@19fe0e4cfalse"
     		}
 		]
 
@@ -92,14 +110,14 @@ package democustomer {
             return getQualifiedClassName(this) + "#[" + String(_id) + "]";
         }
 
-        public function meta_merge(em:IEntityManager, obj:*):void {
+        meta function merge(em:IEntityManager, obj:*):void {
             var src:AuthorityBase = AuthorityBase(obj);
             __initialized = src.__initialized;
             __detachedState = src.__detachedState;
             if (meta::isInitialized()) {
-               	em.meta_mergeExternal(src._authority, _authority, null, this, 'authority', function setter(o:*):void{_authority = o as String});
-               	em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number});
-               	em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number});
+               em.meta_mergeExternal(src._authority, _authority, null, this, 'authority', function setter(o:*):void{_authority = o as String}, false);
+               em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number}, false);
+               em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number}, false);
             }
             else {
                em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number});

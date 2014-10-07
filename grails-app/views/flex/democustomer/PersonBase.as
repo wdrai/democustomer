@@ -14,6 +14,7 @@ package democustomer {
     import flash.utils.IExternalizable;
     import flash.utils.getQualifiedClassName;
     import mx.core.IUID;
+    import mx.data.utils.Managed;
     import mx.utils.UIDUtil;
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
@@ -26,19 +27,23 @@ package democustomer {
     [Managed]
     public class PersonBase implements IExternalizable, IUID {
 
-        protected var _em:IEntityManager = null;
+        public function PersonBase() {
+        }
 
+        [Transient]
+        meta var entityManager:IEntityManager = null;
+		
         private var __initialized:Boolean = true;
         private var __detachedState:String = null;
 
         private var _accountExpired:Boolean;
         private var _accountLocked:Boolean;
         private var _enabled:Boolean;
-        private var _id:Number;
+        protected var _id:Number;
         private var _password:String;
         private var _passwordExpired:Boolean;
         private var _username:String;
-        private var _version:Number;
+        protected var _version:Number;
 
         meta function isInitialized(name:String = null):Boolean {
             if (!name)
@@ -51,20 +56,33 @@ package democustomer {
             );
         }
 
-        [Transient]
-        public function meta_getEntityManager():IEntityManager {
-            return _em;
+        meta function defineProxy(id:Number):void {
+            __initialized = false;
+            _id = id;
         }
-        public function meta_setEntityManager(em:IEntityManager):void {
-        	_em = em;
+        meta function defineProxy3(obj:* = null):Boolean {
+            if (obj != null) {
+                var src:PersonBase = PersonBase(obj);
+                if (src.__detachedState == null)
+                    return false;
+                _id = src._id;
+                __detachedState = src.__detachedState;
+            }
+            __initialized = false;
+            return true;          
         }
+        
+        [Bindable(event="dirtyChange")]
+		public function get meta_dirty():Boolean {
+			return Managed.getProperty(this, "meta_dirty", false);
+		}
     
     	public static const meta_constraints:Array = [
     		{ property: "username",
-				blank: "BlankConstraint@e8899e3false"
+				blank: "BlankConstraint@175e137bfalse"
     		}, 
     		{ property: "password",
-				blank: "BlankConstraint@2a2f0d89false"
+				blank: "BlankConstraint@2150fc39false"
     		}, 
     		{ property: "accountExpired" }, 
     		{ property: "accountLocked" }, 
@@ -139,19 +157,19 @@ package democustomer {
             return getQualifiedClassName(this) + "#[" + String(_id) + "]";
         }
 
-        public function meta_merge(em:IEntityManager, obj:*):void {
+        meta function merge(em:IEntityManager, obj:*):void {
             var src:PersonBase = PersonBase(obj);
             __initialized = src.__initialized;
             __detachedState = src.__detachedState;
             if (meta::isInitialized()) {
-               	em.meta_mergeExternal(src._accountExpired, _accountExpired, null, this, 'accountExpired', function setter(o:*):void{_accountExpired = o as Boolean});
-               	em.meta_mergeExternal(src._accountLocked, _accountLocked, null, this, 'accountLocked', function setter(o:*):void{_accountLocked = o as Boolean});
-               	em.meta_mergeExternal(src._enabled, _enabled, null, this, 'enabled', function setter(o:*):void{_enabled = o as Boolean});
-               	em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number});
-               	em.meta_mergeExternal(src._password, _password, null, this, 'password', function setter(o:*):void{_password = o as String});
-               	em.meta_mergeExternal(src._passwordExpired, _passwordExpired, null, this, 'passwordExpired', function setter(o:*):void{_passwordExpired = o as Boolean});
-               	em.meta_mergeExternal(src._username, _username, null, this, 'username', function setter(o:*):void{_username = o as String});
-               	em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number});
+               em.meta_mergeExternal(src._accountExpired, _accountExpired, null, this, 'accountExpired', function setter(o:*):void{_accountExpired = o as Boolean}, false);
+               em.meta_mergeExternal(src._accountLocked, _accountLocked, null, this, 'accountLocked', function setter(o:*):void{_accountLocked = o as Boolean}, false);
+               em.meta_mergeExternal(src._enabled, _enabled, null, this, 'enabled', function setter(o:*):void{_enabled = o as Boolean}, false);
+               em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number}, false);
+               em.meta_mergeExternal(src._password, _password, null, this, 'password', function setter(o:*):void{_password = o as String}, false);
+               em.meta_mergeExternal(src._passwordExpired, _passwordExpired, null, this, 'passwordExpired', function setter(o:*):void{_passwordExpired = o as Boolean}, false);
+               em.meta_mergeExternal(src._username, _username, null, this, 'username', function setter(o:*):void{_username = o as String}, false);
+               em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number}, false);
             }
             else {
                em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number});
