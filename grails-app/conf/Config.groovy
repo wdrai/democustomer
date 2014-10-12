@@ -116,6 +116,9 @@ log4j.main = {
            'net.sf.ehcache.hibernate'
 }
 
+as3Config {
+	autoCompileFlex = false
+}
 
 // Added by the Spring Security Core plugin:
 grails.plugin.springsecurity.userLookup.userDomainClassName = 'democustomer.Person'

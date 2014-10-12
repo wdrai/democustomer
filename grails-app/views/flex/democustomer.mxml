@@ -1,126 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<mx:Application
-    xmlns:mx="http://www.adobe.com/2006/mxml"
-    xmlns:ui="org.granite.tide.uibuilder.*"
+<s:Application
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns="*"
-    layout="vertical"
     preinitialize="Spring.getInstance().initApplication()"
     initialize="init()">
    
-    <mx:Script>
+    <fx:Script>
         <![CDATA[
 			import democustomer.Customer;
+			import democustomer.CustomerService;
 			
+			import mx.collections.ListCollectionView;
 			import mx.core.Container;
 			
 			import org.granite.tide.data.ChangeMerger;
 			import org.granite.tide.data.DataObserver;
-			import org.granite.tide.deeplinking.TideUrlMapping;
 			import org.granite.tide.events.TideFaultEvent;
 			import org.granite.tide.events.TideResultEvent;
+			import org.granite.tide.service.SimpleServerApp;
 			import org.granite.tide.spring.Context;
 			import org.granite.tide.spring.Identity;
+			import org.granite.tide.spring.PagedQuery;
 			import org.granite.tide.spring.Spring;
-			import org.granite.tide.uibuilder.DefaultUIBuilder;
-			import org.granite.tide.uibuilder.DefaultUIFormLayout;
-			import org.granite.tide.uibuilder.GrailsEntityMetadataBuilder;
-			import org.granite.tide.validators.ValidatorExceptionHandler;
             
-            [Bindable]
-            private var context:Context;
-            
+			
             [Bindable] [Inject]
     		public var identity:Identity;
-    
-    		[Bindable]
-    		private var message:String;
- 
-    		private function loginResult(event:TideResultEvent):void {
-        		message = "";
-    		}
- 			
-    		private function loginFault(event:TideFaultEvent):void {
-        		message = event.fault.faultString;
-    		}
             
+			
             private function init():void {
-	            Spring.getInstance().addPlugin(TideUrlMapping.getInstance());
-	            Spring.getInstance().addComponents([GrailsEntityMetadataBuilder, DefaultUIBuilder, DefaultUIFormLayout]);
-	            Spring.getInstance().addExceptionHandler(ValidatorExceptionHandler);
-	            
+				Spring.getInstance().mainServerSession.serverApp = new SimpleServerApp("/democustomer", false, "localhost", "8080");
+				
+				// Register a PagedQuery component to display the list of customers
+				Spring.getInstance().addComponentWithFactory("customerList", PagedQuery, { maxResults: 36, methodName: "list", remoteComponentClass: CustomerService, elementClass: Customer });
+				
 	            // Register a data observer component with the name of the topic
 				Spring.getInstance().addComponent("customerTopic", DataObserver, false, true);
 				Spring.getInstance().addComponents([ChangeMerger]);
 				// Binds the subscribe and unsubscribe methods of the component to the application login/logout events
 				Spring.getInstance().addEventObserver("org.granite.tide.login", "customerTopic", "subscribe");
 				Spring.getInstance().addEventObserver("org.granite.tide.logout", "customerTopic", "unsubscribe");
-				
-            	context = Spring.getInstance().getSpringContext();
- 				context.urlMapping.init("", "GraniteDS / Grails generated application");        
- 				
- 				addEventListener("showEntityUI", showEntityUI);
- 				addEventListener("endEntityUI", endEntityUI);
 			}
-            
-			private var _previousSelected:Container = null;
-			
-            private function showEntityUI(event:Event):void {
-        		_previousSelected = mainStack.selectedChild as Container;
-            	if (_previousSelected !== this)
-            		mainStack.selectedChild = event.target as Container;
-            }
-            
-            private function endEntityUI(event:Event):void {
-            	if (_previousSelected != null)
-            		mainStack.selectedChild = _previousSelected;
-            }
         ]]>
-    </mx:Script>
-
+    </fx:Script>
+	
 	<mx:ViewStack id="appView" selectedIndex="{identity.loggedIn ? 1 : 0}" width="100%" height="100%">
-        <mx:VBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="center">
-           <mx:Panel title="Login"
-               horizontalAlign="center"
-               verticalGap="0" paddingTop="8" paddingBottom="8"
-               xmlns:mx="http://www.adobe.com/2006/mxml">
-
-               <mx:Form>
-                   <mx:FormItem label="Username">
-                       <mx:TextInput id="username"/>
-                   </mx:FormItem>
-                   <mx:FormItem label="Password">
-                       <mx:TextInput id="password" displayAsPassword="true"
-                           enter="identity.login(username.text, password.text, loginResult, loginFault);"/>
-                   </mx:FormItem>
-               </mx:Form>
-             
-               <mx:Label text="{message}"/>
-
-               <mx:Button label="Login"
-                   click="identity.login(username.text, password.text, loginResult, loginFault);"/>
-           </mx:Panel>
-       </mx:VBox>
-       
-	    <mx:VBox id="mainUI" width="100%" height="100%">
-	        <mx:ApplicationControlBar id="acb" width="100%">
-	            <mx:Label text="GraniteDS / Grails generated application" fontSize="18" fontWeight="bold" color="#f0f0f0"/>
-	        </mx:ApplicationControlBar>
-		   	
-			<mx:HBox width="100%" height="100%">
-				<mx:Panel width="200" height="100%" title="Controllers" paddingTop="4" paddingBottom="4">
-					<mx:LinkButton label="Customers" width="100%" textAlign="left"
-						click="mainStack.selectedChild = customerUI" />
-	            
-				</mx:Panel>
-		
-		        <mx:ViewStack id="mainStack" width="100%" height="100%">
-				    <ui:EntityUI id="customerUI" 
-				    	entityClass="{Customer}" 
-				    	width="100%" height="100%"/>
-		            
-				</mx:ViewStack>
-			</mx:HBox>
-	    </mx:VBox>
+		<s:NavigatorContent>
+			<LoginView id="loginView" width="100%" height="100%"/>
+		</s:NavigatorContent>
+       	
+		<s:NavigatorContent>
+			<MainView id="mainView" width="100%" height="100%"/>
+		</s:NavigatorContent>
 	</mx:ViewStack>
-</mx:Application>
+</s:Application>

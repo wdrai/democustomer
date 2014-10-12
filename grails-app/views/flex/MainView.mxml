@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" 
+		  xmlns:s="library://ns.adobe.com/flex/spark">
+	
+	<fx:Metadata>[Name]</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import democustomer.Customer;
+			import democustomer.CustomerService;
+			
+			import mx.data.utils.Managed;
+			
+			import org.granite.tide.spring.PagedQuery;
+			
+			[Bindable] [In]
+			public var customerList:PagedQuery;
+			
+			[Bindable] [Out]
+			public var customer:Customer = new Customer();
+			
+			[Inject]
+			public var customerService:CustomerService;
+			
+			
+			private function create():void {
+				cancel();
+				customer = new Customer();
+			}
+			
+			private function remove():void {
+				customerService.remove(customer.id);
+			}
+			
+			private function save():void {
+				customerService.save(customer);
+			}
+			
+			private function cancel():void {
+				Managed.resetEntity(customer);
+			}
+			
+			private function select():void {
+				cancel();
+				if (customerUI.selectedItem != null)
+					customer = Customer(customerUI.selectedItem);
+				else
+					customer = new Customer();
+			}
+		]]>
+	</fx:Script>
+	
+	<s:VGroup width="100%" paddingLeft="10" paddingRight="10" paddingTop="15" paddingBottom="15">
+		<s:Label text="GraniteDS / Grails example application" fontSize="24" fontWeight="bold" color="black"/>
+	</s:VGroup>
+	
+	<s:HGroup width="100%" height="100%" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" gap="10">
+		<s:DataGrid id="customerUI" width="100%" height="100%" dataProvider="{customerList}"
+					valueCommit="select()">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn headerText="Id" dataField="id"/>
+					<s:GridColumn headerText="First name" dataField="firstName"/>
+					<s:GridColumn headerText="Last name" dataField="lastName"/>
+					<s:GridColumn headerText="Number of logons" dataField="numberOfLogons"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		
+		<s:VGroup>						
+			<s:HGroup gap="10">
+				<s:Button id="bCreate" label="Create" click="create()"/>
+				
+				<s:Button id="bDelete" label="Delete" enabled="{!isNaN(customer.version)}" click="remove()"/>
+			</s:HGroup>
+			
+			<s:Form>
+				<s:FormHeading label="{isNaN(customer.version) ? 'New customer' : 'Edit customer'}"/>
+				
+				<s:FormItem label="First name">
+					<s:TextInput id="iFirstName" text="@{customer.firstName}"/>
+				</s:FormItem>
+				<s:FormItem label="Last name">
+					<s:TextInput id="iLastName" text="@{customer.lastName}"/>
+				</s:FormItem>
+			</s:Form>
+			
+			<s:HGroup gap="10">
+				<s:Button id="bSave" label="Save" enabled="{customer.meta_dirty}" click="save()"/>
+				
+				<s:Button id="bCancel" label="Cancel" enabled="{customer.meta_dirty}" click="cancel()"/>
+			</s:HGroup>
+		</s:VGroup>
+	</s:HGroup>
+</s:VGroup>

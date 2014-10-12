@@ -20,6 +20,7 @@
   </compiler>
   <applications>
     <application path="democustomer.mxml"/>
+    <application path="MainView.mxml"/>
   </applications>
   <modules/>
   <buildCSSFiles/>
