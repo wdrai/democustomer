@@ -75,7 +75,7 @@ grails.project.dependency.resolution = {
         //compile ":coffee-asset-pipeline:1.8.0"
         //compile ":handlebars-asset-pipeline:1.3.0.3"
 		
-		compile ':gdsflex:2.0.0-SNAPSHOT'
+		compile 'org.graniteds.grails:gdsflex:2.0.0-SNAPSHOT'
 		
 		compile ':spring-security-core:2.0-RC4'
     }
