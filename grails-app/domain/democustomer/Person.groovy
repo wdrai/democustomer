@@ -1,5 +1,6 @@
 package democustomer
 
+
 class Person {
 
 	transient springSecurityService
@@ -10,6 +11,8 @@ class Person {
 	boolean accountExpired
 	boolean accountLocked
 	boolean passwordExpired
+	
+	Company company
 
 	static transients = ['springSecurityService']
 

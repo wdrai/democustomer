@@ -1,7 +1,7 @@
 package democustomer
 
 
-class Customer implements java.io.Serializable {
+class Customer implements CompanyOwned, java.io.Serializable {
 
     static constraints = {
 	}
@@ -11,6 +11,8 @@ class Customer implements java.io.Serializable {
 	String firstName
 	
 	String lastName
+	
+	Company company
 	
 	Integer numberOfLogons = 0
 	

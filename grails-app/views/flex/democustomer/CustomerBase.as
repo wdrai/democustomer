@@ -34,6 +34,7 @@ package democustomer {
         private var __initialized:Boolean = true;
         private var __detachedState:String = null;
 
+        private var _company:Company;
         private var _firstName:String;
         protected var _id:Number;
         private var _lastName:String;
@@ -74,10 +75,20 @@ package democustomer {
 		}
     
     	public static const meta_constraints:Array = [
+    		{ property: "company",
+				association: "oneToOne"
+    		}, 
     		{ property: "firstName" }, 
     		{ property: "lastName" }, 
     		{ property: "numberOfLogons" }
 		]
+
+        public function set company(value:Company):void {
+            _company = value;
+        }
+        public function get company():Company {
+            return _company;
+        }
 
         public function set firstName(value:String):void {
             _firstName = value;
@@ -128,6 +139,7 @@ package democustomer {
             __initialized = src.__initialized;
             __detachedState = src.__detachedState;
             if (meta::isInitialized()) {
+               em.meta_mergeExternal(src._company, _company, null, this, 'company', function setter(o:*):void{_company = o as Company}, false);
                em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}, false);
                em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number}, false);
                em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}, false);
@@ -144,6 +156,7 @@ package democustomer {
             __initialized = input.readObject() as Boolean;
             __detachedState = input.readObject() as String;
             if (meta::isInitialized()) {
+                _company = input.readObject() as Company;
                 _firstName = input.readObject() as String;
                 _id = function(o:*):Number { return (o is Number ? o as Number : Number.NaN) } (input.readObject());
                 _lastName = input.readObject() as String;
@@ -160,6 +173,7 @@ package democustomer {
             output.writeObject(__initialized);
             output.writeObject(__detachedState);
             if (meta::isInitialized()) { 
+                output.writeObject((_company is IPropertyHolder) ? IPropertyHolder(_company).object : _company); 
                 output.writeObject((_firstName is IPropertyHolder) ? IPropertyHolder(_firstName).object : _firstName); 
                 output.writeObject((_id is IPropertyHolder) ? IPropertyHolder(_id).object : _id); 
                 output.writeObject((_lastName is IPropertyHolder) ? IPropertyHolder(_lastName).object : _lastName); 

@@ -2,6 +2,7 @@ package democustomer
 
 import org.apache.commons.lang.builder.HashCodeBuilder
 
+
 class PersonAuthority implements Serializable {
 
 	private static final long serialVersionUID = 1

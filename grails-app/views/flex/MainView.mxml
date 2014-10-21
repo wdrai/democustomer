@@ -13,6 +13,7 @@
 			
 			import mx.data.utils.Managed;
 			
+			import org.granite.tide.events.TideContextEvent;
 			import org.granite.tide.spring.PagedQuery;
 			
 			[Bindable] [In]
@@ -31,7 +32,7 @@
 			}
 			
 			private function remove():void {
-				customerService.remove(customer.id);
+				customerService.remove(customer);
 			}
 			
 			private function save():void {
@@ -48,6 +49,22 @@
 					customer = Customer(customerUI.selectedItem);
 				else
 					customer = new Customer();
+			}
+			
+			private var timer:Timer;
+			
+			[Observer("org.granite.tide.data.update.Customer")]
+			public function showUpdate(event:TideContextEvent):void {
+				timer = new Timer(2000);
+				timer.addEventListener(TimerEvent.TIMER, clearUpdateMessage);
+				timer.start();
+				var customer:Customer = Customer(event.params[0]);
+				lMessage.text = "Update received: " + customer.firstName + " " + customer.lastName;
+			}
+			
+			private function clearUpdateMessage(event:TimerEvent):void {
+				timer.removeEventListener(TimerEvent.TIMER, clearUpdateMessage);
+				lMessage.text = "";
 			}
 		]]>
 	</fx:Script>
@@ -94,4 +111,9 @@
 			</s:HGroup>
 		</s:VGroup>
 	</s:HGroup>
+	
+	<s:HGroup paddingLeft="10" paddingTop="10" paddingBottom="10" paddingRight="10">
+		<s:Label id="lMessage"/>
+	</s:HGroup>
+	
 </s:VGroup>

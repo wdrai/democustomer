@@ -75,7 +75,7 @@ package democustomer {
     
     	public static const meta_constraints:Array = [
     		{ property: "authority",
-				association: "oneToOne", validator: "ValidatorConstraint@4582331fdemocustomer.PersonAuthority$__clinit__closure9_closure14@66ea5bdf"
+				association: "oneToOne", validator: "ValidatorConstraint@78e4ee3cdemocustomer.PersonAuthority$__clinit__closure9_closure14@7dd4e325"
     		}, 
     		{ property: "person",
 				association: "oneToOne"

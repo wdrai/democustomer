@@ -38,6 +38,7 @@ package democustomer {
 
         private var _accountExpired:Boolean;
         private var _accountLocked:Boolean;
+        private var _company:Company;
         private var _enabled:Boolean;
         protected var _id:Number;
         private var _password:String;
@@ -79,13 +80,16 @@ package democustomer {
     
     	public static const meta_constraints:Array = [
     		{ property: "username",
-				blank: "BlankConstraint@175e137bfalse"
+				blank: "BlankConstraint@1bcf2034false"
     		}, 
     		{ property: "password",
-				blank: "BlankConstraint@2150fc39false"
+				blank: "BlankConstraint@3b4b442ffalse"
     		}, 
     		{ property: "accountExpired" }, 
     		{ property: "accountLocked" }, 
+    		{ property: "company",
+				association: "oneToOne"
+    		}, 
     		{ property: "enabled" }, 
     		{ property: "passwordExpired" }
 		]
@@ -102,6 +106,13 @@ package democustomer {
         }
         public function get accountLocked():Boolean {
             return _accountLocked;
+        }
+
+        public function set company(value:Company):void {
+            _company = value;
+        }
+        public function get company():Company {
+            return _company;
         }
 
         public function set enabled(value:Boolean):void {
@@ -164,6 +175,7 @@ package democustomer {
             if (meta::isInitialized()) {
                em.meta_mergeExternal(src._accountExpired, _accountExpired, null, this, 'accountExpired', function setter(o:*):void{_accountExpired = o as Boolean}, false);
                em.meta_mergeExternal(src._accountLocked, _accountLocked, null, this, 'accountLocked', function setter(o:*):void{_accountLocked = o as Boolean}, false);
+               em.meta_mergeExternal(src._company, _company, null, this, 'company', function setter(o:*):void{_company = o as Company}, false);
                em.meta_mergeExternal(src._enabled, _enabled, null, this, 'enabled', function setter(o:*):void{_enabled = o as Boolean}, false);
                em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number}, false);
                em.meta_mergeExternal(src._password, _password, null, this, 'password', function setter(o:*):void{_password = o as String}, false);
@@ -182,6 +194,7 @@ package democustomer {
             if (meta::isInitialized()) {
                 _accountExpired = input.readObject() as Boolean;
                 _accountLocked = input.readObject() as Boolean;
+                _company = input.readObject() as Company;
                 _enabled = input.readObject() as Boolean;
                 _id = function(o:*):Number { return (o is Number ? o as Number : Number.NaN) } (input.readObject());
                 _password = input.readObject() as String;
@@ -200,6 +213,7 @@ package democustomer {
             if (meta::isInitialized()) { 
                 output.writeObject((_accountExpired is IPropertyHolder) ? IPropertyHolder(_accountExpired).object : _accountExpired); 
                 output.writeObject((_accountLocked is IPropertyHolder) ? IPropertyHolder(_accountLocked).object : _accountLocked); 
+                output.writeObject((_company is IPropertyHolder) ? IPropertyHolder(_company).object : _company); 
                 output.writeObject((_enabled is IPropertyHolder) ? IPropertyHolder(_enabled).object : _enabled); 
                 output.writeObject((_id is IPropertyHolder) ? IPropertyHolder(_id).object : _id); 
                 output.writeObject((_password is IPropertyHolder) ? IPropertyHolder(_password).object : _password); 

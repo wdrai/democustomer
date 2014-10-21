@@ -3,7 +3,7 @@ package democustomer
 import org.granite.tide.data.DataEnabled;
 import org.springframework.transaction.annotation.Transactional;
 
-@DataEnabled(topic="customerTopic", publish=DataEnabled.PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="customerTopic", publish=DataEnabled.PublishMode.ON_COMMIT, params=CompanyFilter.class, useInterceptor=true)
 class RandomLogonGeneratorService {
 
     def generateLogon() {

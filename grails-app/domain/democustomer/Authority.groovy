@@ -1,5 +1,6 @@
 package democustomer
 
+
 class Authority {
 
 	String authority
