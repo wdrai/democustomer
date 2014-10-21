@@ -767,7 +767,7 @@ class Customer implements CompanyOwned, java.io.Serializable {
 Note that we implement a simple interface CompanyOwned that we will use later to determine which classes should be filtered 
 by company.
 
-As we have changed the domain classe, we have to regenerate the AS3 classes with:
+As we have changed the domain classes, we have to regenerate the AS3 classes with:
 
 ----
 grails gas3
