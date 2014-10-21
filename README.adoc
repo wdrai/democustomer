@@ -876,20 +876,33 @@ We are going to use this in +CustomerService+ to filter the objects that are ret
 
 [source,groovy]
 ----
-	def list(Object filter, int first, int max, String[] order, boolean[] desc) {
-		if (max <= 0)
-			max = 36
-		
-		Company company = SecurityContextHolder.getContext().getAuthentication().getPrincipal().company
-		
-		def resultList = (order && order.length > 0) 
-			? Customer.findAllByCompany(company, [ offset: first, max: max, sort: order[0], order: desc[0] ? "desc" : "asc" ]) 
-			: Customer.findAllByCompany(company, [ offset: first, max: max ])
-		
-		def resultCount = Customer.countByCompany(company)
-		
-		[ resultList: resultList, resultCount: resultCount, firstResult: first, maxResults: max ]
-    }
+def list(Object filter, int first, int max, String[] order, boolean[] desc) {
+	if (max <= 0)
+		max = 36
+	
+	Company company = SecurityContextHolder.getContext().getAuthentication().getPrincipal().company
+	
+	def resultList = (order && order.length > 0) 
+		? Customer.findAllByCompany(company, [ offset: first, max: max, sort: order[0], order: desc[0] ? "desc" : "asc" ]) 
+		: Customer.findAllByCompany(company, [ offset: first, max: max ])
+	
+	def resultCount = Customer.countByCompany(company)
+	
+	[ resultList: resultList, resultCount: resultCount, firstResult: first, maxResults: max ]
+}
+----
+
+And set the current company when creating new customers:
+
+[source,groovy]
+----
+def save(Object customer) {
+	if (customer.id == null && customer.company == null)
+		customer.company = SecurityContextHolder.getContext().getAuthentication().getPrincipal().company
+	
+	customer = customer.merge(flush:true)
+	return customer
+}
 ----
 
 We can improve the security of the service further by using the annotations +@PreAuthorize+ and +@PostAuthorize+ of Spring Security.
@@ -913,9 +926,13 @@ class CompanyPermissionEvaluator implements PermissionEvaluator {
 
 	@Override
 	public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-		Company company = authentication.principal.company;
-		if (targetDomainObject instanceof CompanyOwned)
-			return targetDomainObject.companyId == company.id 
+		Company company = authentication.principal.company;		
+		if (targetDomainObject instanceof CompanyOwned) {
+		 	if (targetDomainObject.companyId != null)
+			 	return targetDomainObject.companyId == company.id
+			else
+				return targetDomainObject.id == null	// null company allowed only for new objects
+		}
 		return true;
 	}
 	
@@ -939,24 +956,24 @@ This permission evaluator allows us to define authorizations at the service leve
 
 [source,groovy]
 ----
-	@PostAuthorize("hasPermission(returnObject, read)")
-    def find(Object id) {
-    	def customer = Customer.get(id)
-    	return customer
-    }
-	
-	@PreAuthorize("hasPermission(#customer, write)")
-	def save(Object customer) {
-		customer = customer.merge(flush:true)
-		return customer
-	}
-	
-	@PreAuthorize("hasPermission(#customer, delete)")
-	def remove(Object customer) {
-		customer = Customer.get(customer.id)
-		if (customer)
-			customer.delete()
-	}
+@PostAuthorize("hasPermission(returnObject, read)")
+def find(Object id) {
+	def customer = Customer.get(id)
+	return customer
+}
+
+@PreAuthorize("hasPermission(#customer, write)")
+def save(Object customer) {
+	customer = customer.merge(flush:true)
+	return customer
+}
+
+@PreAuthorize("hasPermission(#customer, delete)")
+def remove(Object customer) {
+	customer = Customer.get(customer.id)
+	if (customer)
+		customer.delete()
+}
 ----
 
 +Post+ and +Pre+ authorizations check that the current user has the correct right to access the object specified in the expression.

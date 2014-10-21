@@ -10,12 +10,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import grails.plugin.springsecurity.userdetails.GormUserDetailsService;
 
 class CompanyPermissionEvaluator implements PermissionEvaluator {
-
+	
 	@Override
 	public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-		Company company = authentication.principal.company;
-		if (targetDomainObject instanceof CompanyOwned)
-			return targetDomainObject.companyId == company.id 
+		Company company = authentication.principal.company;		
+		if (targetDomainObject instanceof CompanyOwned) {
+		 	if (targetDomainObject.companyId != null)
+			 	return targetDomainObject.companyId == company.id
+			else
+				return targetDomainObject.id == null	// null company allowed only for new objects
+		}
+		
 		return true;
 	}
 	

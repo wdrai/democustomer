@@ -40,6 +40,9 @@ class CustomerService {
 	
 	@PreAuthorize("hasPermission(#customer, write)")
 	def save(Object customer) {
+		if (customer.id == null && customer.company == null)
+			customer.company = SecurityContextHolder.getContext().getAuthentication().getPrincipal().company
+		
 		customer = customer.merge(flush:true)
 		return customer
 	}
