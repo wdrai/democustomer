@@ -5,8 +5,7 @@
 	xmlns:mx="library://ns.adobe.com/flex/mx" 
 	xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns="*"
-    preinitialize="Spring.getInstance().initApplication()"
-    initialize="init()">
+    preinitialize="init()">
    
     <fx:Script>
         <![CDATA[
@@ -32,10 +31,13 @@
             
 			
             private function init():void {
+            	Spring.getInstance().initApplication();
+            	
 				Spring.getInstance().mainServerSession.serverApp = new SimpleServerApp("/democustomer", false, "localhost", "8080");
 				
 				// Register a PagedQuery component to display the list of customers
-				Spring.getInstance().addComponentWithFactory("customerList", PagedQuery, { maxResults: 36, methodName: "list", remoteComponentClass: CustomerService, elementClass: Customer });
+				Spring.getInstance().addComponentWithFactory("customerList", PagedQuery, { maxResults: 36, methodName: "list", 
+					remoteComponentClass: CustomerService, elementClass: Customer });
 				
 	            // Register a data observer component with the name of the topic
 				Spring.getInstance().addComponent("customerTopic", DataObserver, false, true);

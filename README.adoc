@@ -118,7 +118,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class CustomerService {
 	
-	def list(Object filter, int first, int max, String[] order, boolean[] desc) {	<2>
+	def list(Object filter, int first, int max, String[] order, boolean[] desc) {	// <2>
 		if (max <= 0)
 			max = 36
 				
@@ -137,12 +137,12 @@ class CustomerService {
     }
 
 	def save(Object customer) {
-		customer = customer.merge(flush:true)	<3>
+		customer = customer.merge(flush:true)	// <3>
 		return customer
 	}
 	
-	def remove(Object id) {
-		def customer = Customer.get(id)
+	def remove(Object customer) {
+		def customer = Customer.get(customer.id)
 		if (customer)
 			customer.delete()
 	}
@@ -176,8 +176,7 @@ Then in +grails-app/views/flex+ we will create a very simple application:
 	xmlns:mx="library://ns.adobe.com/flex/mx" 
 	xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns="*"
-    preinitialize="Spring.getInstance().initApplication()"
-    initialize="init()">
+    preinitialize="init()">
    
     <fx:Script>
         <![CDATA[
@@ -194,6 +193,8 @@ Then in +grails-app/views/flex+ we will create a very simple application:
 			
 			
             private function init():void {
+            	Spring.getInstance().initApplication();
+            	
 				Spring.getInstance().mainServerSession.serverApp = 				// <1>
 					new SimpleServerApp("/democustomer", false, "localhost", "8080");
 				
@@ -207,7 +208,7 @@ Then in +grails-app/views/flex+ we will create a very simple application:
 	<MainView id="mainView" width="100%" height="100%"/>
 </s:Application>
 ----
-<1> Configures the server parameters in case the application is launched in a standalone Flash player. Unnecessary when executed in browser.
+<1> Configures the server parameters in case the application is launched in a standalone Flash player (IDE debug mode for example). It's not necessary when executed inside the browser.
 <2> Configures the +PagedQuery+ component than handles paging and sorting on the data requested from the remote service. 
 
 And the main view, which is basically a +DataGrid+ using the +PagedQuery+ as data provider:
